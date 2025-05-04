@@ -15,5 +15,6 @@ namespace api.DTO.Contact
         public DateTime BirthDate { get; set; }
         public int CategoryId { get; set; }
         public int? SubcategoryId { get; set; }
+        
     }
 }

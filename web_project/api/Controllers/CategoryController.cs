@@ -2,6 +2,8 @@ using api.Data;
 using api.DTO;
 using Microsoft.AspNetCore.Mvc;
 using api.Mappers;
+using api.Interfaces;
+using System.Threading.Tasks;
 namespace api.Controllers
 {
     [Route("api/[controller]")]
@@ -9,24 +11,25 @@ namespace api.Controllers
     public class CategoryController : ControllerBase
     {
     private readonly ApplicationDBContext _context;
-   public CategoryController(ApplicationDBContext context)
+    private readonly ICategoryRepository _repo;
+   public CategoryController(ICategoryRepository repository)
    {
-      _context=context;
+      _repo=repository;
    }
    
    [HttpGet]
-   public IActionResult GetAllCategories()
+   public async Task<IActionResult> GetAllCategories()
    {
-      var categories = _context.Categories.ToList()
-         .Select( s => s.ToCategoryDTO());
-            return Ok(categories);
+      var categories = await _repo.GetAllAsync();
+      var categories_dto= categories.Select( s => s.ToCategoryDTO());
+      return Ok(categories_dto);
    }
    [HttpGet("{id}")]
 
 
-   public IActionResult getById([FromRoute] int id)
+   public async Task<IActionResult> getById([FromRoute] int id)
    {
-      var category=_context.Categories.Find(id);
+      var category= await _repo.GetById(id);
       if (category == null)
          return NotFound();
       return Ok(category.ToCategoryDTO());

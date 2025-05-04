@@ -14,7 +14,8 @@ namespace api.Mappers
             return new CategoryDTO
             {
                 Id=categorymodel.Id,
-                Name=categorymodel.Name
+                Name=categorymodel.Name,
+                Contacts =categorymodel.Contacts.Select(c => c.ToContactDTO()).ToList()
             };
         }
     }

@@ -4,8 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using api.Data;
 using api.DTO.Contact;
+using api.Interfaces;
 using api.Mappers;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace api.Controllers
 {
@@ -15,22 +17,27 @@ namespace api.Controllers
 public class ContactController : ControllerBase
 {
     private readonly ApplicationDBContext _context;
-    public ContactController(ApplicationDBContext context)
+    private readonly IContactRepository _repo;
+    public ContactController(ApplicationDBContext context,IContactRepository repo)
     {
+        _repo=repo;
         _context = context;
     }
     //Get: Contacts
         [HttpGet]
-        public IActionResult GetAllContacts()
+        public async Task<IActionResult> GetAllContacts()
         {
-        var contacts = _context.Contacts.ToList();        
-        return Ok(contacts);
+            var contacts = await _repo.GetAllasync();
+
+            var contactdtoo =contacts.Select(s=>s.ToContactDTO());        
+        
+            return Ok(contactdtoo);
         }
 
         [HttpGet("{id}")]
-        public IActionResult getById([FromRoute] int id)
+        public async Task<IActionResult> getById([FromRoute] int id)
         {
-        var contact = _context.Contacts.Find(id);
+        var contact = await _repo.GetByIdAsync(id);
         if (contact == null)
         {
             return NotFound();
@@ -38,44 +45,34 @@ public class ContactController : ControllerBase
         return Ok(contact);
         }
          [HttpPost]
-        public IActionResult Create([FromBody] CreateContactDTO contactDTO)
+        public async Task<IActionResult> Create([FromBody] CreateContactDTO contactDTO)
         {
-            var contactModel=contactDTO.ToContactCreateDTO();
-            _context.Contacts.Add(contactModel);
-            _context.SaveChanges();
+            var contactModel= contactDTO.ToContactCreateDTO();
+            await _repo.CreateAsync(contactModel);
             return CreatedAtAction(nameof(getById),new{id=contactModel.Id},contactModel.ToContactDTO());
         }
         [HttpPut]
         [Route("{id}")]
-        public IActionResult Update([FromRoute] int id, [FromBody] UpdateContact contactDTO){
-            var contactModel=_context.Contacts.FirstOrDefault(x=>x.Id==id);
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateContact contactDTO){
+            var contactModel=await _repo.UpdateAsync(id,contactDTO);
             if(contactModel==null)
             {
                 return NotFound();
             }
-            contactModel.BirthDate=contactDTO.BirthDate;
-            contactModel.CategoryId=contactDTO.CategoryId;
-            contactModel.Email=contactDTO.Email;
-            contactModel.FirstName=contactDTO.FirstName;
-            contactModel.LastName=contactDTO.LastName;
-            contactModel.Phone=contactDTO.Phone;
-            contactDTO.SubcategoryId=contactDTO.SubcategoryId;
-            _context.SaveChanges();
+         
             return Ok(contactModel.ToContactDTO());
 
         }
 
         [HttpDelete]
         [Route("{id}")]
-        public IActionResult Delete([FromRoute] int id)
+        public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            var contactModel =_context.Contacts.FirstOrDefault(x=>x.Id==id);
+            var contactModel =await _repo.DeleteAsync(id);
             if(contactModel==null)
             {
                 return NotFound();
             }
-            _context.Contacts.Remove(contactModel);
-            _context.SaveChanges();
             return NoContent();
         }
     }
