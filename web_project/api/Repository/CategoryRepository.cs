@@ -17,6 +17,12 @@ namespace api.Repository
         {
             _context = context;
         }
+
+        public Task<bool> CategoryExists(int id)
+        {
+            return _context.Categories.AnyAsync(s=> s.Id==id);
+        }
+
         public async Task<List<Category>> GetAllAsync()
         {
                 return await _context.Categories.Include(c=>c.Contacts).ToListAsync();

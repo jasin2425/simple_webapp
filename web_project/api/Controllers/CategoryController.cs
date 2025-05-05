@@ -20,15 +20,19 @@ namespace api.Controllers
    [HttpGet]
    public async Task<IActionResult> GetAllCategories()
    {
+          if(!ModelState.IsValid)
+                return BadRequest(ModelState);
       var categories = await _repo.GetAllAsync();
       var categories_dto= categories.Select( s => s.ToCategoryDTO());
       return Ok(categories_dto);
    }
-   [HttpGet("{id}")]
+   [HttpGet("{id:int}")]
 
 
    public async Task<IActionResult> getById([FromRoute] int id)
    {
+          if(!ModelState.IsValid)
+                return BadRequest(ModelState);
       var category= await _repo.GetById(id);
       if (category == null)
          return NotFound();

@@ -6,6 +6,7 @@ using api.Data;
 using api.DTO.Contact;
 using api.Interfaces;
 using api.Mappers;
+using api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,25 +19,33 @@ public class ContactController : ControllerBase
 {
     private readonly ApplicationDBContext _context;
     private readonly IContactRepository _repo;
-    public ContactController(ApplicationDBContext context,IContactRepository repo)
+    private readonly ICategoryRepository _categoryrepo;
+    public ContactController(ApplicationDBContext context,IContactRepository repo, ICategoryRepository categoryRepo)
     {
         _repo=repo;
         _context = context;
+        _categoryrepo=categoryRepo;
     }
-    //Get: Contacts
+    //get all Contacts
         [HttpGet]
         public async Task<IActionResult> GetAllContacts()
         {
+            if(!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var contacts = await _repo.GetAllasync();
 
             var contactdtoo =contacts.Select(s=>s.ToContactDTO());        
         
             return Ok(contactdtoo);
         }
-
-        [HttpGet("{id}")]
+        //get contact by id
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> getById([FromRoute] int id)
         {
+            if(!ModelState.IsValid)
+                return BadRequest(ModelState);    
+
         var contact = await _repo.GetByIdAsync(id);
         if (contact == null)
         {
@@ -44,34 +53,50 @@ public class ContactController : ControllerBase
         }
         return Ok(contact);
         }
-         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateContactDTO contactDTO)
+
+        //create contact
+         [HttpPost("{categoryId:int}")]
+        public async Task<IActionResult> Create( CreateContactDTO contactDTO,[FromRoute] int categoryId)
         {
-            var contactModel= contactDTO.ToContactCreateDTO();
+            if(!ModelState.IsValid)
+                return BadRequest(ModelState); 
+            if(!await _categoryrepo.CategoryExists(categoryId)){
+                return BadRequest("Category does not exists");
+            }
+            var contactModel= contactDTO.ToContactCreateDTO(categoryId);
             await _repo.CreateAsync(contactModel);
             return CreatedAtAction(nameof(getById),new{id=contactModel.Id},contactModel.ToContactDTO());
         }
+
+        //update contact
         [HttpPut]
-        [Route("{id}")]
-        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateContact contactDTO){
-            var contactModel=await _repo.UpdateAsync(id,contactDTO);
+        [Route("{id:int}")]
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateContactDTO contact){
+           if(!ModelState.IsValid)
+                return BadRequest(ModelState); 
+
+            var contactModel=await _repo.UpdateAsync(id,contact.ToContactUpdateDTO());
             if(contactModel==null)
             {
-                return NotFound();
+                return NotFound("Contact not found");
             }
          
             return Ok(contactModel.ToContactDTO());
 
         }
 
+        //deleting contact
         [HttpDelete]
-        [Route("{id}")]
+        [Route("{id:int}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
+            if(!ModelState.IsValid)
+                return BadRequest(ModelState); 
+
             var contactModel =await _repo.DeleteAsync(id);
             if(contactModel==null)
             {
-                return NotFound();
+                return NotFound("Contact not found");
             }
             return NoContent();
         }

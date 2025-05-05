@@ -25,16 +25,26 @@ namespace api.Mappers
             };
         }
         //contactDTO -> Contact
-        public static Contact ToContactCreateDTO(this CreateContactDTO contact)
+        public static Contact ToContactCreateDTO(this CreateContactDTO contact,int categoryId)
         {
             return new Contact
             {
                 BirthDate = contact.BirthDate,
-                CategoryId = contact.CategoryId,
+                CategoryId = categoryId,
                 Email = contact.Email,
                 FirstName = contact.FirstName,
                 LastName = contact.LastName,
-                SubcategoryId = contact.SubcategoryId,
+                Phone = contact.Phone
+            };
+        }
+         public static Contact ToContactUpdateDTO(this UpdateContactDTO contact)
+        {
+            return new Contact
+            {
+                BirthDate = contact.BirthDate,
+                Email = contact.Email,
+                FirstName = contact.FirstName,
+                LastName = contact.LastName,
                 Phone = contact.Phone
             };
         }

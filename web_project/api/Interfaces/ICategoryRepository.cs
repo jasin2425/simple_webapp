@@ -10,5 +10,7 @@ namespace api.Interfaces
     {
         Task<List<Category>> GetAllAsync();
         Task<Category?> GetById(int id);
+
+        Task<bool> CategoryExists(int id);
     }
 }

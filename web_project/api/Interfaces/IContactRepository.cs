@@ -12,7 +12,7 @@ namespace api.Interfaces
         Task<List<Contact>> GetAllasync();
         Task<Contact?> GetByIdAsync(int id);
         Task<Contact> CreateAsync(Contact contactModel);
-        Task<Contact?> UpdateAsync(int id, UpdateContact contactDTO);
+        Task<Contact?> UpdateAsync(int id,  Contact contactModel);
         Task<Contact?> DeleteAsync(int id);
     }
 }

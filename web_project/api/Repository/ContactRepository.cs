@@ -46,20 +46,18 @@ namespace api.Repository
             return await _context.Contacts.FindAsync(id);
         }
 
-        public async Task<Contact?> UpdateAsync(int id, UpdateContact contactDTO)
+        public async Task<Contact?> UpdateAsync(int id, Contact contactModel)
         {
-            var existingContact = await _context.Contacts.FirstOrDefaultAsync(x=>x.Id==id);
+            var existingContact = await _context.Contacts.FindAsync(id);
             if(existingContact==null)
             {
                 return null;
             }
-            existingContact.BirthDate=contactDTO.BirthDate;
-            existingContact.CategoryId=contactDTO.CategoryId;
-            existingContact.Email=contactDTO.Email;
-            existingContact.FirstName=contactDTO.FirstName;
-            existingContact.LastName=contactDTO.LastName;
-            existingContact.Phone=contactDTO.Phone;
-            existingContact.SubcategoryId=contactDTO.SubcategoryId;
+            existingContact.BirthDate=contactModel.BirthDate;
+             existingContact.Email=contactModel.Email;
+            existingContact.FirstName=contactModel.FirstName;
+            existingContact.LastName=contactModel.LastName;
+            existingContact.Phone=contactModel.Phone;
             await _context.SaveChangesAsync();
             return existingContact;
         }
