@@ -7,6 +7,7 @@ using api.DTO.Contact;
 using api.Interfaces;
 using api.Mappers;
 using api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,6 +29,7 @@ public class ContactController : ControllerBase
     }
     //get all Contacts
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAllContacts()
         {
             if(!ModelState.IsValid)
