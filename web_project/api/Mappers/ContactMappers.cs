@@ -57,10 +57,12 @@ namespace api.Mappers
             {
                 BirthDate = contact.BirthDate,
                 CategoryId = categoryId,
+               SubcategoryId=contact.SubcategoryId,
                 Email = contact.Email,
                 FirstName = contact.FirstName,
                 LastName = contact.LastName,
-                Phone = contact.Phone
+                Phone = contact.Phone,
+                
             };
         }
         //updateContactDto -> contact
@@ -72,7 +74,9 @@ namespace api.Mappers
                 Email = contact.Email,
                 FirstName = contact.FirstName,
                 LastName = contact.LastName,
-                Phone = contact.Phone
+                Phone = contact.Phone,
+                CategoryId=contact.CategoryId,
+                SubcategoryId=contact.CategoryId
             };
         }
     }

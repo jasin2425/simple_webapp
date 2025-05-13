@@ -26,6 +26,9 @@ namespace api.DTO.Contact
         [DataType(DataType.Date)]
         [BirthDateValidation(ErrorMessage = "Birth date must be in the past.")]
         public DateTime BirthDate { get; set; }
+        public int CategoryId { get; set; }
+        public int? SubcategoryId { get; set; }
+        public string? CustomSubcategory { get; set; }
 
     }
 

@@ -57,18 +57,39 @@ public class ContactController : ControllerBase
         }
 
         //create contact
-         [HttpPost("{categoryId:int}")]
-        public async Task<IActionResult> Create( CreateContactDTO contactDTO,[FromRoute] int categoryId)
+        [HttpPost("{categoryId:int}")]
+public async Task<IActionResult> Create(CreateContactDTO contactDTO, [FromRoute] int categoryId)
+{
+    if (!ModelState.IsValid)
+        return BadRequest(ModelState);
+
+    if (!await _categoryrepo.CategoryExists(categoryId))
+        return BadRequest("Category does not exist");
+
+    if (!string.IsNullOrWhiteSpace(contactDTO.CustomSubcategory))
+    {
+        var newSub = new Subcategory { Name = contactDTO.CustomSubcategory };
+        await _context.Subcategories.AddAsync(newSub);
+        await _context.SaveChangesAsync();
+
+        // Dodaj powiązanie do CategoryandSubcategory
+        var relation = new CategoryandSubcategory
         {
-            if(!ModelState.IsValid)
-                return BadRequest(ModelState); 
-            if(!await _categoryrepo.CategoryExists(categoryId)){
-                return BadRequest("Category does not exists");
-            }
-            var contactModel= contactDTO.ToContactCreateDTO(categoryId);
-            await _repo.CreateAsync(contactModel);
-            return CreatedAtAction(nameof(getById),new{id=contactModel.Id},contactModel.ToContactDTO());
-        }
+            CategoryId = categoryId,
+            SubcategoryId = newSub.Id
+        };
+        await _context.CategorySubcategories.AddAsync(relation);
+        await _context.SaveChangesAsync();
+
+        contactDTO.SubcategoryId = newSub.Id;
+    }
+
+    var contactModel = contactDTO.ToContactCreateDTO(categoryId);
+    await _repo.CreateAsync(contactModel);
+
+    return CreatedAtAction(nameof(getById), new { id = contactModel.Id }, contactModel.ToContactDTO());
+}
+
 
         //update contact
         [HttpPut]
@@ -76,7 +97,7 @@ public class ContactController : ControllerBase
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateContactDTO contact){
            if(!ModelState.IsValid)
                 return BadRequest(ModelState); 
-
+    
             var contactModel=await _repo.UpdateAsync(id,contact.ToContactUpdateDTO());
             if(contactModel==null)
             {
