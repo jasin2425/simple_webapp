@@ -24,6 +24,32 @@ namespace api.Mappers
                 Phone = contact.Phone
             };
         }
+        public static ContactDetailDTO toDetailContactDto(this Contact contact)
+        {
+            return new ContactDetailDTO{
+                Id = contact.Id,
+                FirstName = contact.FirstName,
+                LastName = contact.LastName,
+                BirthDate = contact.BirthDate,
+                Email = contact.Email,
+                Phone = contact.Phone,
+                CategoryName=contact.Category?.Name??"Empty Category",
+                 SubcategoryName = contact.subcategory?.Name
+
+                
+            };
+        }
+
+        //contact -> minimize contact
+        public static ContactMinimizeDTO toMinimalisticContactDto(this Contact contact)
+        {
+            return new ContactMinimizeDTO
+            {
+                Id=contact.Id,
+                FirstName=contact.FirstName,
+                LastName=contact.LastName
+            };
+        }
         //contactDTO -> Contact
         public static Contact ToContactCreateDTO(this CreateContactDTO contact,int categoryId)
         {
@@ -37,6 +63,7 @@ namespace api.Mappers
                 Phone = contact.Phone
             };
         }
+        //updateContactDto -> contact
          public static Contact ToContactUpdateDTO(this UpdateContactDTO contact)
         {
             return new Contact

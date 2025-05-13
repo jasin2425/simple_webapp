@@ -43,7 +43,10 @@ namespace api.Repository
 
         public async Task<Contact?> GetByIdAsync(int id)
         {
-            return await _context.Contacts.FindAsync(id);
+            return await _context.Contacts
+            .Include(c => c.Category)
+            .Include(c => c.subcategory)
+            .FirstOrDefaultAsync(c => c.Id == id);
         }
 
         public async Task<Contact?> UpdateAsync(int id, Contact contactModel)

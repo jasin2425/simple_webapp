@@ -82,6 +82,7 @@ options.DefaultSignOutScheme=JwtBearerDefaults.AuthenticationScheme;
 
 builder.Services.AddScoped<IContactRepository,ContactRepository>();
 builder.Services.AddScoped<ICategoryRepository,CategoryRepository>();
+builder.Services.AddScoped<ISubcategoryRepository, SubcategoryRepository>();
 builder.Services.AddScoped<ITokenService,TokenService>();
 var app = builder.Build();
 
@@ -95,6 +96,5 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.UseAuthorization();
 
 app.Run();

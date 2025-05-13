@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using api.Data;
+using api.DTO.Subcategory;
+using api.Interfaces;
+using api.Mappers;
+using api.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace api.Controllers
@@ -13,28 +17,60 @@ namespace api.Controllers
 public class SubcategoryController:ControllerBase
 {
     private readonly ApplicationDBContext _context;
-    public SubcategoryController(ApplicationDBContext context)
+    private readonly ISubcategoryRepository _repo;
+    public SubcategoryController(ISubcategoryRepository repo)
     {
-        _context=context;
+        _repo=repo;
     }
     //Get: Subcategories
     [HttpGet]
-    public IActionResult GetAllSubcategories()
+    public async Task<IActionResult> GetAllSubcategories()
     {
-        var subcategories = _context.Subcategories.ToList();        
-        return Ok(subcategories);
+        if(!ModelState.IsValid)
+                return BadRequest(ModelState);
+        var subcategories = await _repo.GetAllasync();
+        var subcategories_dto =subcategories.Select(s=>s.ToSubcategoryDto());       
+        return Ok(subcategories_dto);
     }
     [HttpGet("{id}")]
 
-    public IActionResult getById([FromRoute] int id)
+    public async Task<IActionResult> getById([FromRoute] int id)
     {
-        var subcategory=_context.Subcategories.Find(id);
+         if(!ModelState.IsValid)
+                return BadRequest(ModelState);
+        var subcategory=await _repo.GetByIdAsync(id);
         if (subcategory == null)
         {
             return NotFound();
         }
-        return Ok(subcategory);
+        return Ok(subcategory.ToSubcategoryDto());
     }
-     
+     [HttpPost("{categoryId:int}")]
+public async Task<IActionResult> Create([FromBody] SubcategoryCreate dto, [FromRoute] int categoryId)
+{
+    if (!ModelState.IsValid)
+        return BadRequest(ModelState);
+
+    var category = await _context.Categories.FindAsync(categoryId);
+    if (category == null)
+        return BadRequest("Category does not exist");
+
+    // utwórz subkategorię
+    var model = dto.ToSubcategoryFromCreate();
+    await _context.Subcategories.AddAsync(model);
+    await _context.SaveChangesAsync();
+
+    // powiąż w tabeli pośredniej
+    var relation = new CategoryandSubcategory
+    {
+        CategoryId = categoryId,
+        SubcategoryId = model.Id
+    };
+    await _context.CategorySubcategories.AddAsync(relation);
+    await _context.SaveChangesAsync();
+
+    return CreatedAtAction(nameof(getById), new { id = model.Id }, model);
+}
+
     }
 }

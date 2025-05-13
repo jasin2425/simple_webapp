@@ -16,8 +16,6 @@ namespace api.Data
         {
             
         }
-              //creating entities
-
     public DbSet<Contact> Contacts { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Subcategory> Subcategories { get; set; }   
@@ -26,6 +24,18 @@ namespace api.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+             builder.Entity<CategoryandSubcategory>()
+            .HasKey(cs => new { cs.CategoryId, cs.SubcategoryId });
+
+        builder.Entity<CategoryandSubcategory>()
+            .HasOne(cs => cs.Category)
+            .WithMany(c => c.CategorySubcategories)
+            .HasForeignKey(cs => cs.CategoryId);
+
+        builder.Entity<CategoryandSubcategory>()
+            .HasOne(cs => cs.Subcategory)
+            .WithMany(s => s.CategorySubcategories)
+        .HasForeignKey(cs => cs.SubcategoryId);
             List<IdentityRole> roles = new List<IdentityRole>
             {
                 new IdentityRole{

@@ -8,6 +8,5 @@ namespace api.Models
 {
     public class AppUser:IdentityUser
     {
-        public List<Contact>? Contacts { get; set; } = new List<Contact>();
     }
 }

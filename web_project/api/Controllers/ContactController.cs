@@ -37,9 +37,9 @@ public class ContactController : ControllerBase
 
             var contacts = await _repo.GetAllasync();
 
-            var contactdtoo =contacts.Select(s=>s.ToContactDTO());        
+            var minimalisticcontactdtoo =contacts.Select(s=>s.toMinimalisticContactDto());        
         
-            return Ok(contactdtoo);
+            return Ok(minimalisticcontactdtoo);
         }
         //get contact by id
         [HttpGet("{id:int}")]
@@ -53,7 +53,7 @@ public class ContactController : ControllerBase
         {
             return NotFound();
         }
-        return Ok(contact);
+        return Ok(contact.toDetailContactDto());
         }
 
         //create contact
