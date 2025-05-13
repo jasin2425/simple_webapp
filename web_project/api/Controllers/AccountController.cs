@@ -47,43 +47,55 @@ namespace api.Controllers
             );
         }
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDtO registerDTO)
+public async Task<IActionResult> Register([FromBody] RegisterDtO registerDTO)
+{
+    try
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var existingEmail = await _userManager.FindByEmailAsync(registerDTO.Email);
+        if (existingEmail != null)
+            return BadRequest("Email jest już używany.");
+
+        var existingUser = await _userManager.FindByNameAsync(registerDTO.Username);
+        if (existingUser != null)
+            return BadRequest("Nazwa użytkownika jest już zajęta.");
+
+        var AppUser = new AppUser
         {
-            try
+            UserName = registerDTO.Username.ToLower(),
+            Email = registerDTO.Email
+        };
+
+        var createdUser = await _userManager.CreateAsync(AppUser, registerDTO.Password);
+        if (createdUser.Succeeded)
+        {
+            var roleResult = await _userManager.AddToRoleAsync(AppUser, "User");
+            if (roleResult.Succeeded)
             {
-                if(!ModelState.IsValid)
-                return BadRequest(ModelState);
-                var AppUser=new AppUser
+                return Ok(new NewUserDto
                 {
-                    UserName =registerDTO.Username,
-                    Email=registerDTO.Email,
-                };
-                var createdUser = await _userManager.CreateAsync(AppUser,registerDTO.Password);
-                if(createdUser.Succeeded)
-                {
-                    var roleResult = await _userManager.AddToRoleAsync(AppUser,"User");
-                    if(roleResult.Succeeded)
-                    {
-                        return Ok(
-                            new NewUserDto{
-                                userName=AppUser.UserName,
-                                Email=AppUser.Email,
-                                Token=_tokenService.CreateToken(AppUser)
-                            }
-                        );
-                    }
-                    else
-                    {
-                        return StatusCode(500,roleResult.Errors);
-                    }
-                }
-                else
-                return StatusCode(500,createdUser.Errors);
+                    userName = AppUser.UserName,
+                    Email = AppUser.Email,
+                    Token = _tokenService.CreateToken(AppUser)
+                });
             }
-            catch(Exception e)
+            else
             {
-                return StatusCode(500,e);
+                return StatusCode(500, roleResult.Errors);
             }
         }
+        else
+        {
+            return StatusCode(500, createdUser.Errors);
+        }
+    }
+    catch (Exception e)
+    {
+        return StatusCode(500, e.Message);
+    }
+}
+
     }
 }
